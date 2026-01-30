@@ -9,7 +9,7 @@ const connectDB = async () => {
     }
 
     await mongoose.connect(url, {
-      dbName: "devtinder",
+      dbName: "devConnects",
     });
 
     console.log("Database connected successfully");
