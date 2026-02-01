@@ -40,9 +40,24 @@ app.get('/userList', async (req, res) => {
   try {
     const users = await User.find({});
     if (users.length === 0) {
-      res.status(404).send('Users data fetched successfully');
+      res.status(404).send('Users not found');
     } else {
       res.send(users);
+    }
+  } catch (error) {
+    res.status(400).send('User not found');
+  }
+});
+
+app.get('/userById', async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    // const user = await User.findById({_id : userId}); or
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).send('User not found');
+    } else {
+      res.status(201).send(user, 'User found successfully');
     }
   } catch (error) {
     res.status(400).send('User not found');
