@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // const {Schema} = mongoose;
 
@@ -6,31 +6,50 @@ const mongoose = require("mongoose");
 // or
 
 const userSchem = new mongoose.Schema({
-    firstName : {
-        type: String,
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true, // avoid spaces
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  age: {
+    type: Number,
+    min: 18,
+  },
+  gender: {
+    type: String,
+    validate(value) {
+      if (!['male', 'female', 'others'].includes(value)) {
+        throw new Error('Gender not valid');
+      }
     },
-    lastName:{
-        type:String
-    },
-    age:{
-        type:Number
-    },
-    email:{
-        type:String
-    },
-    password:{
-        type:String
-    },
-    gender:{
-        type:String,
-    },
-    createdAt:{
-        type:Date,
-        default:Date.now
-    }
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  photoUrl: {
+    type: String,
+  },
+  about: {
+    type: String,
+    default: 'This is default value',
+  },
+  skills: [String],
 });
 
-module.exports = mongoose.model("User",userSchem);
+module.exports = mongoose.model('User', userSchem);
 
 // or
 
