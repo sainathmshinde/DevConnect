@@ -1,5 +1,6 @@
 require('dotenv').config();
-
+const { validateSignupData } = require('./utils/validation');
+const bcrypt = require('bcrypt');
 const express = require('express');
 const { connectDB } = require('./config/database');
 const User = require('./models/user');
@@ -11,13 +12,17 @@ const app = express();
 app.use(express.json());
 
 app.post('/signup', async (req, res) => {
-  // Creating a new instance of the User Model
-  const user = new User(req.body);
   try {
+    //validate signup data
+    validateSignupData(req);
+
+    // Creating a new instance of the User Model
+    const user = new User(req.body);
+
     await user.save();
     res.send('User created successfully');
   } catch (error) {
-    res.status(400).send('Error saving user: ' + err.message);
+    res.status(400).send('Error saving user: ' + error.message);
   }
 });
 
@@ -93,6 +98,9 @@ app.patch('/user/:userId', async (req, res) => {
 
     if (!isUpdateAllowed) {
       throw new Error('Update not allowed');
+    }
+    if (data?.skills && data?.skills.length > 10) {
+      return res.status(400).send('Maximum 10 skills allowed');
     }
     const user = await User.findByIdAndUpdate({ _id: userId }, data, {
       returnDocument: 'after', // defaukt is before, now log will return after db update data

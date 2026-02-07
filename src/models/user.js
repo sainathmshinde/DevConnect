@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 // const {Schema} = mongoose;
 
@@ -22,6 +23,11 @@ const userSchem = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true, // avoid spaces
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error('Enter valid email' + value);
+        }
+      },
     },
     password: {
       type: String,
@@ -29,14 +35,8 @@ const userSchem = new mongoose.Schema(
       minlength: 8,
       maxlength: 100,
       validate(value) {
-        if (
-          !value.match(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-          )
-        ) {
-          throw new Error(
-            'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character'
-          );
+        if (!validator.isStrongPassword(value)) {
+          throw new Error('Enetr Strong Password');
         }
       },
     },
@@ -67,6 +67,7 @@ const userSchem = new mongoose.Schema(
 
     skills: {
       type: [String],
+      maxlength: [10, 'Maximum 10 skills allowed'],
     },
   },
   {
