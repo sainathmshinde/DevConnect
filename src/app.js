@@ -4,12 +4,15 @@ const bcrypt = require('bcrypt');
 const express = require('express');
 const { connectDB } = require('./config/database');
 const User = require('./models/user');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
 //It is a built-in Express middleware that parses incoming JSON request bodies
 // and makes the data available as  : req.body
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
   try {
@@ -44,10 +47,32 @@ app.post('/login', async (req, res) => {
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
+      const token = jwt.sign({ _id: user?._id }, 'Dev@Tinder$123');
+      // res.cookie('token', 'dhfhgfhskfzjfhguadF.hjkcSBD>fbEAdSs');
+      res.cookie('token', token);
       res.send('Login Successful!');
     } else {
       throw new Error('Invalid credentials');
     }
+  } catch (error) {
+    res.status(400).send('Error : ' + error.message);
+  }
+});
+
+app.get('/profile', async (req, res) => {
+  try {
+    const cookie = req.cookies;
+
+    const { token } = cookie;
+    if (!token) {
+      throw new Error('Invalid token');
+    }
+    //validate my token
+    const decodedMessage = jwt.verify(token, 'Dev@Tinder$123');
+
+    const { _id } = decodedMessage;
+    const user = await User.findOne({ _id: _id });
+    res.send(user);
   } catch (error) {
     res.status(400).send('Error : ' + error.message);
   }
@@ -143,6 +168,8 @@ app.patch('/user/:userId', async (req, res) => {
     res.status(400).send('User Update failed:' + error.message);
   }
 });
+
+app.get('/profile', async (req, res) => {});
 
 connectDB()
   .then(() => {
