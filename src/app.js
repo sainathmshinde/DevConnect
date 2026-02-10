@@ -6,6 +6,7 @@ const { connectDB } = require('./config/database');
 const User = require('./models/user');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const { userAuth } = require('./middlewares/auth');
 
 const app = express();
 
@@ -59,19 +60,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
+  console.log('req', req.user);
+
   try {
-    const cookie = req.cookies;
+    const user = req.user;
 
-    const { token } = cookie;
-    if (!token) {
-      throw new Error('Invalid token');
-    }
-    //validate my token
-    const decodedMessage = jwt.verify(token, 'Dev@Tinder$123');
-
-    const { _id } = decodedMessage;
-    const user = await User.findOne({ _id: _id });
     res.send(user);
   } catch (error) {
     res.status(400).send('Error : ' + error.message);
