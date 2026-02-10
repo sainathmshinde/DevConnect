@@ -48,9 +48,13 @@ app.post('/login', async (req, res) => {
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
-      const token = jwt.sign({ _id: user?._id }, 'Dev@Tinder$123');
+      const token = jwt.sign({ _id: user?._id }, 'Dev@Tinder$123', {
+        expiresIn: '1d',
+      });
       // res.cookie('token', 'dhfhgfhskfzjfhguadF.hjkcSBD>fbEAdSs');
-      res.cookie('token', token);
+      res.cookie('token', token, {
+        expires: new Date(Date.now() + 1 * 3600000), // cookie will be removed after 8 hours
+      });
       res.send('Login Successful!');
     } else {
       throw new Error('Invalid credentials');
@@ -72,98 +76,10 @@ app.get('/profile', userAuth, async (req, res) => {
   }
 });
 
-app.get('/user', async (req, res) => {
-  const userEmail = req.body.email;
-
-  try {
-    const users = await User.findOne({ email: userEmail });
-    if (users.length === 0) {
-      res.status(404).send('User not found');
-    } else {
-      res.send(users);
-    }
-  } catch (error) {
-    res.status(400).send('User not found');
-  }
+app.post('/sendConnectionrequest', userAuth, async (req, res) => {
+  console.log('Request Sent');
+  res.send('Connect sent');
 });
-
-app.get('/userList', async (req, res) => {
-  try {
-    const users = await User.find({});
-    if (users.length === 0) {
-      res.status(404).send('Users not found');
-    } else {
-      res.send(users);
-    }
-  } catch (error) {
-    res.status(400).send('User not found');
-  }
-});
-
-app.get('/userById', async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    // const user = await User.findById({_id : userId}); or
-    const user = await User.findById(userId);
-    if (!user) {
-      res.status(404).send('User not found');
-    } else {
-      res.status(201).send(user, 'User found successfully');
-    }
-  } catch (error) {
-    res.status(400).send('User not found');
-  }
-});
-
-// Delete user
-
-app.delete('/user', async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    // const user = await User.findByIdAndDelete({_id : userId}); or
-    const user = await User.findByIdAndDelete(userId);
-    if (!user) {
-      res.status(404).send('User not found');
-    } else {
-      res.status(201).send('User Deleted successfully');
-    }
-  } catch (error) {
-    res.status(400).send('User not found');
-  }
-});
-
-app.patch('/user/:userId', async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-
-  try {
-    const ALLOWED_UPDATES = ['photoUrl', 'about', 'gender', 'age', 'skills'];
-    const isUpdateAllowed = Object.keys(data).every((k) =>
-      ALLOWED_UPDATES.includes(k)
-    );
-
-    if (!isUpdateAllowed) {
-      throw new Error('Update not allowed');
-    }
-    if (data?.skills && data?.skills.length > 10) {
-      return res.status(400).send('Maximum 10 skills allowed');
-    }
-    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
-      returnDocument: 'after', // defaukt is before, now log will return after db update data
-      runValidators: true,
-    });
-
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(400).send('User Update failed:' + error.message);
-  }
-});
-
-app.get('/profile', async (req, res) => {});
 
 connectDB()
   .then(() => {
