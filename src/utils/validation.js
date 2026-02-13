@@ -15,4 +15,25 @@ const validateSignupData = (req) => {
   }
 };
 
-module.exports = { validateSignupData };
+const validateProfileData = (req) => {
+  if (!req.body) {
+    throw new Error('Please enter valid data');
+  }
+  const allowedEditFields = [
+    'firstName',
+    'lastName',
+    'age',
+    'photoUrl',
+    'gender',
+    'skills',
+    'about',
+  ];
+
+  const isAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field)
+  );
+
+  return isAllowed;
+};
+
+module.exports = { validateSignupData, validateProfileData };
