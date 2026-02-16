@@ -25,4 +25,4 @@ userRouter
 - GET /user/requests
 - GET /user/feed - Get the profile of other user
 
-Status - ignore, intrested, accepted, rejected
+Status - ignored, intdrested, accepted, rejected

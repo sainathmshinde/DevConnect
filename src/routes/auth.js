@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
 authRouter.post('/signup', async (req, res) => {
-  debugger;
   try {
     //validate signup data
     validateSignupData(req);
@@ -31,36 +30,50 @@ authRouter.post('/signup', async (req, res) => {
 
 authRouter.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
+    const { email, password } = req.body || {};
+
+    if (!email || !password) {
+      throw new Error('Email and password required');
+    }
+
+    const user = await User.findOne({ email });
+
     if (!user) {
       throw new Error('Invalid credentials');
     }
-    const isPasswordValid = await user?.validatePassword(password);
-    if (isPasswordValid) {
-      const token = await user?.getJWT();
-      // res.cookie('token', 'dhfhgfhskfzjfhguadF.hjkcSBD>fbEAdSs');
-      res.cookie('token', token, {
-        expires: new Date(Date.now() + 1 * 3600000), // cookie will be removed after 8 hours
-      });
-      res.send('Login Successful!');
-    } else {
+
+    const isPasswordValid = await user.validatePassword(password);
+
+    if (!isPasswordValid) {
       throw new Error('Invalid credentials');
     }
+
+    const token = await user.getJWT();
+
+    res.cookie('token', token, {
+      expires: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
+      httpOnly: true, // 🔐 prevents JS access
+      secure: false, // true in production (HTTPS)
+    });
+
+    res.send('Login Successful!');
   } catch (error) {
-    res.status(400).send('Error : ' + error.message);
+    res.status(400).send('Error: ' + error.message);
   }
 });
+
 authRouter.post('/logout', async (req, res) => {
   res.cookie('token', null, {
-    expiresIn: new Date(Date.now()),
+    // or res.clearCookie('token');
+    expires: new Date(Date.now()),
   });
+
   res.send('Logout Successsful!!');
 
   // or
 
   // res.cookie('token', null, {
-  //   expiresIn: new Date(Date.now()),
+  //   expires: new Date(Date.now()),
   // }).send();
 });
 
