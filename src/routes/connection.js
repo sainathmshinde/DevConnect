@@ -52,7 +52,19 @@ connectionRouter.post(
     });
 
     console.log('Request Sent');
-    res.send('Connect sent');
+    res.send('Connection sent');
+  }
+);
+
+connectionRouter.post(
+  'request/review/:status/:requestId',
+  userAuth,
+  async (req, res) => {
+    try {
+      // const loggedInUser =
+    } catch (error) {
+      res.status(400).send('Error ' + error.message);
+    }
   }
 );
 
